@@ -881,6 +881,7 @@ flutter run
 
 **แก้ไขเปลี่ยนแปลง App Bar ให้แสดง คำว่า "Dev by" ตามด้วยชื่อนักศึกษา** แล้วบันทึกรูปผลการทดลอง
 <img width="507" height="796" alt="image" src="https://github.com/user-attachments/assets/412f20d9-d311-4930-b824-0a9e00f88d8d" />
+<img width="507" height="797" alt="image" src="https://github.com/user-attachments/assets/307629e4-33ee-4300-a192-ab549d5a2d84" />
 
 ---
 
@@ -922,12 +923,152 @@ Add brief comments explaining each section.
 
 อ่าน code ที่ AI สร้างและตอบคำถาม:
 
+โค้ดที่ได้
+```
+import 'package:flutter/material.dart';
+
+class UserProfileCard extends StatelessWidget {
+  final String name;
+  final String email;
+  final String? avatarUrl;
+  final int postsCount;
+  final int followersCount;
+  final int followingCount;
+
+  const UserProfileCard({
+    super.key,
+    required this.name,
+    required this.email,
+    this.avatarUrl,
+    required this.postsCount,
+    required this.followersCount,
+    required this.followingCount,
+  });
+
+  // Helper method to extract initials from the name
+  String get _initials {
+    if (name.isEmpty) return '';
+    final parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Reading color scheme and text theme from context
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      // 6. Card with proper Material 3 elevation (Level 1 is standard for M3)
+      elevation: 1,
+      margin: const EdgeInsets.all(8.0),
+      child: Padding(
+        // 8. Proper padding (16px)
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 1. Circular User Avatar (Radius 32)
+            CircleAvatar(
+              radius: 32,
+              backgroundColor: colorScheme.primaryContainer,
+              backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+              child: avatarUrl == null
+                  ? Text(
+                      _initials,
+                      style: TextStyle(color: colorScheme.onPrimaryContainer),
+                    )
+                  : null,
+            ),
+            const SizedBox(height: 8), // 8. Spacing (8px)
+
+            // 2. Username using titleLarge
+            Text(
+              name,
+              style: textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+            ),
+
+            // 3. Email using bodyMedium and onSurfaceVariant
+            Text(
+              email,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // 5. Row of 3 stats: Posts, Followers, Following
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStatColumn("Posts", postsCount.toString(), context),
+                _buildStatColumn("Followers", followersCount.toString(), context),
+                _buildStatColumn("Following", followingCount.toString(), context),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // 4. Follow (Filled) and Message (Outlined) buttons
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () {},
+                    child: const Text("Follow"),
+                  ),
+                ),
+                const SizedBox(width: 8), // 8. Spacing (8px)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {},
+                    child: const Text("Message"),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 5. Helper to build the stat column
+  Widget _buildStatColumn(String label, String value, BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      children: [
+        Text(
+          value,
+          style: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        Text(
+          label,
+          style: textTheme.labelMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
 | คำถาม | คำตอบ |
 |-------|-------|
-| AI ใช้ Widget อะไรสร้าง Avatar? | _________________ |
-| AI handle กรณี avatarUrl เป็น null อย่างไร? | _________________ |
-| AI ใช้ color จาก Theme หรือ hardcode? | _________________ |
-| มีส่วนไหนที่ควรปรับปรุง? | _________________ |
+| AI ใช้ Widget อะไรสร้าง Avatar? | ใช้ Widget ที่ชื่อว่า CircleAvatar |
+| AI handle กรณี avatarUrl เป็น null อย่างไร? | ใช้เงื่อนไขตรวจสอบ (Ternary Operator: ? :) ถ้า avatarUrl เป็น null จะไม่โหลดรูปภาพ แต่จะแสดงตัวอักษรย่อของชื่อ (ดึงจากเมธอด _initials) ออกมาเป็น Text วางไว้ตรงกลางแทน |
+| AI ใช้ color จาก Theme หรือ hardcode? | ใช้จาก Theme โดยการอ่านค่าผ่าน Theme.of(context).colorScheme แล้วนำมาเรียกใช้  โดยไม่มีการ Hardcode กำหนดรหัสสีลงไปตรง ๆ |
+| มีส่วนไหนที่ควรปรับปรุง? | ควรปรับปรุงส่วนของการดึงรูปภาพ NetworkImage(avatarUrl!)  เพราะในแอปจริงหาก URL พังหรือไม่มีอินเทอร์เน็ต แอปอาจจะแสดง Error ได้ ควรเพิ่มการจัดการข้อผิดพลาด เช่น ใช้ errorBuilder หรือเปลี่ยนไปใช้แพ็กเกจอย่าง cached_network_image เพื่อให้ทำงานได้เสถียรขึ้น|
 
 **ขั้นตอนที่ 4.4: นำ Code ไปใช้ใน Project**
 
@@ -950,9 +1091,10 @@ Add brief comments explaining each section.
    ```
 5. ดู Code และ Widget Tree ที่ได้ และเปรียบเทียบกับ  Code และ Widget tree ที่เขียนเองในการทดลองที่ 3
    
-```text
-เขียนผลการเปรียบเทียบที่นี่
-
+```
+- โครงสร้าง UI: Code ที่เขียนเองในการทดลองที่ 3 เรียบง่าย ส่วน AI โครงสร้างซ้อนกันลึกและเก็บรายละเอียดจาก Mockup (เช่น ความโปร่งแสง หรือความโค้งมน) ได้เป๊ะกว่า
+- การจัดการข้อมูล: Code ที่เขียนเองในการทดลองที่ 3 ยืดหยุ่นกว่าเพราะแยกข้อมูลออกจาก UI (ใช้ List) ส่วน AI มักจะ Hardcode พิมพ์ข้อความฝังลงไปเลย ซึ่งเอาไปใช้ต่อกับฐานข้อมูลจริงได้ยาก
+- การจัดระเบียบไฟล์:Code ที่เขียนเองในการทดลองที่ 3 มีการแยกไฟล์ Component ชัดเจนและเป็นระเบียบ ส่วน AI มักจะสร้างทุกอย่างกระจุกรวมมาในไฟล์เดียว
 ```
 ---
 
